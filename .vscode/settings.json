@@ -1,0 +1,27 @@
+{
+  "jest.enable": true,
+  "jest.rootPath": "be",
+  "jest.jestCommandLine": "npm test --",
+  "jest.autoRun": "off",
+  "jest.nodeEnv": {
+    "NODE_OPTIONS": "--experimental-vm-modules"
+  },
+  "jest.debugMode": true,
+  "jest.debugConfig": {
+    "type": "node",
+    "request": "launch",
+    "console": "integratedTerminal",
+    "internalConsoleOptions": "neverOpen",
+    "sourceMaps": true,
+    "outFiles": [
+      "${workspaceFolder}/be/**/*.js"
+    ],
+    "resolveSourceMapLocations": [
+      "${workspaceFolder}/**",
+      "!**/node_modules/**"
+    ],
+    "skipFiles": [
+      "<node_internals>/**"
+    ]
+  }
+}
