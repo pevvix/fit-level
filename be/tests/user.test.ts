@@ -1,7 +1,5 @@
 import { describe, test, expect, beforeEach, afterEach, jest } from '@jest/globals';
 import { User, WorkoutPlan, ActivityRecord } from '../src/model/model';
-import { de, fa, tr } from 'zod/locales';
-import e from 'express';
 
 
 describe('User.fillMissedActivityGap()', () => {

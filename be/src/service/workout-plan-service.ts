@@ -1,63 +1,62 @@
-
-import { WorkoutPlan } from "../model/model";
 import { WorkoutPlanDto } from "../dto/dto";
+import { workoutPlanRepo } from "../dao/dao-factory";
+import { WorkoutPlanEntity } from "../model/entities";
 
-export function createWorkoutPlan(workoutPlan: WorkoutPlanDto): WorkoutPlanDto {
-    const newWorkoutPlan = new WorkoutPlan({
-        id: crypto.randomUUID(),
+
+function toWorkoutPlanEntity(workoutPlan: WorkoutPlanDto): WorkoutPlanEntity {
+    return {
+        id: workoutPlan.id || crypto.randomUUID(),
         name: workoutPlan.name,
         description: workoutPlan.description,
-        activityTypeByDay: workoutPlan.activityTypeByDay
-    });
-
-    // Here you would typically save the newWorkoutPlan to a database
-
-    workoutPlan.id = newWorkoutPlan.id; 
-    return workoutPlan;
+        activities_on_monday: JSON.stringify(workoutPlan.activityTypeByDay.MONDAY),
+        activities_on_tuesday: JSON.stringify(workoutPlan.activityTypeByDay.TUESDAY),
+        activities_on_wednesday: JSON.stringify(workoutPlan.activityTypeByDay.WEDNESDAY),
+        activities_on_thursday: JSON.stringify(workoutPlan.activityTypeByDay.THURSDAY),
+        activities_on_friday: JSON.stringify(workoutPlan.activityTypeByDay.FRIDAY),
+        activities_on_saturday: JSON.stringify(workoutPlan.activityTypeByDay.SATURDAY),
+        activities_on_sunday: JSON.stringify(workoutPlan.activityTypeByDay.SUNDAY),
+        created_at: new Date().toISOString()
+    } as WorkoutPlanEntity;
 }
 
-export function getAllWorkoutPlans(): WorkoutPlanDto[] {
-    // Here you would typically retrieve all workout plans from a database
-    // For demonstration, we will return a list with a single dummy workout plan
-    return [
-        {
-            id: "dummy-id",
-            name: "Dummy Workout Plan",
-            description: "This is a dummy workout plan for testing.",
-            activityTypeByDay: {
-                MONDAY: ['cardio'],
-                TUESDAY: ['strength'],
-                WEDNESDAY: ['yoga'],
-                THURSDAY: [],
-                FRIDAY: ['swimming'],
-                SATURDAY: [],
-                SUNDAY: ['flexibility']
-            }
-        }
-    ] as WorkoutPlanDto[];
-}   
-
-export function getWorkoutPlanById(id: string): WorkoutPlanDto | null{
-    // Here you would typically retrieve the workout plan from a database using the id
-    // For demonstration, we will return a dummy workout plan if the id matches a specific value
+function toWorkoutPlanDto(plan: WorkoutPlanEntity): WorkoutPlanDto {
     return {
-        id: "dummy-id",
-        name: "Dummy Workout Plan",
-        description: "This is a dummy workout plan for testing.",
+        id: plan.id,
+        name: plan.name,
+        description: plan.description,
         activityTypeByDay: {
-            MONDAY: ['cardio'],
-            TUESDAY: ['strength'],
-            WEDNESDAY: ['yoga'],
-            THURSDAY: [],
-            FRIDAY: ['swimming'],
-            SATURDAY: [],
-            SUNDAY: ['flexibility']
+            MONDAY: JSON.parse(plan.activities_on_monday || '[]'),
+            TUESDAY: JSON.parse(plan.activities_on_tuesday || '[]'),
+            WEDNESDAY: JSON.parse(plan.activities_on_wednesday || '[]'),
+            THURSDAY: JSON.parse(plan.activities_on_thursday || '[]'),
+            FRIDAY: JSON.parse(plan.activities_on_friday || '[]'),
+            SATURDAY: JSON.parse(plan.activities_on_saturday || '[]'),
+            SUNDAY: JSON.parse(plan.activities_on_sunday || '[]')
         }
     } as WorkoutPlanDto;
 }
 
-export function updateWorkoutPlan(id: string, workoutPlan: WorkoutPlanDto): WorkoutPlanDto {
-    // Here you would typically update the workout plan in a database using the id and the new data
-    // For demonstration, we will return the updated workout plan with the same id
+export async function createWorkoutPlan(workoutPlan: WorkoutPlanDto): Promise<WorkoutPlanDto> {
+    workoutPlan.id = crypto.randomUUID();
+    await workoutPlanRepo.create(toWorkoutPlanEntity(workoutPlan) as WorkoutPlanEntity);
+    return workoutPlan;
+}
+
+export async function getAllWorkoutPlans(): Promise<WorkoutPlanDto[]> {
+    const plans = await workoutPlanRepo.getAll();
+    return plans.map(plan => toWorkoutPlanDto(plan));
+}
+
+export async function getWorkoutPlanById(id: string): Promise<WorkoutPlanDto | null> {
+    const plan = await workoutPlanRepo.findById(id);
+    if (plan) {
+        return toWorkoutPlanDto(plan);
+    }
+    return null;
+}
+
+export async function updateWorkoutPlan(id: string, workoutPlan: WorkoutPlanDto): Promise<WorkoutPlanDto> {
+    workoutPlan.id = id;
+    await workoutPlanRepo.update(toWorkoutPlanEntity(workoutPlan) as WorkoutPlanEntity);
     return workoutPlan;
 }   

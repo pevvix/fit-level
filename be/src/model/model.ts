@@ -27,19 +27,6 @@ export class WorkoutPlan {
     return this.activityTypeByDay[weekDays[day.getDay()]].length > 0;
   }
 
-
-  // static createBlankPlan(): ActivityTypeByDay {
-  //   return {
-  //     MONDAY: [],
-  //     TUESDAY: [],
-  //     WEDNESDAY: [],
-  //     THURSDAY: [],
-  //     FRIDAY: [],
-  //     SATURDAY: [],
-  //     SUNDAY: []
-  //   };
-  // }
-
   static from(obj: WorkoutPlanDto): WorkoutPlan {
     return new WorkoutPlan( {
       id: obj.id, 

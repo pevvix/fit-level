@@ -2,6 +2,21 @@
   "version": "0.2.0",
   "configurations": [
     {
+      "name": "Debug Express App",
+      "type": "node",
+      "request": "launch",
+      "runtimeExecutable": "${workspaceRoot}/be/node_modules/.bin/tsx",
+      "runtimeArgs": [
+        "src/app.ts"
+      ],
+      "cwd": "${workspaceRoot}/be",
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen",
+      "skipFiles": [
+        "<node_internals>/**"
+      ]
+    },
+    {
       "name": "Debug Jest Tests",
       "type": "node",
       "request": "launch",

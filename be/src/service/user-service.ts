@@ -1,9 +1,19 @@
 import { ScoreDto, UserDto, WorkoutPlanDto, WorkoutSummaryDto } from '../dto/dto';
+import { userRepo } from '../dao/dao-factory'; 
+import { UserEntity } from '../model/entities';
 
 export function createUser(user: UserDto): WorkoutSummaryDto {
     // Here you would typically save the new user to a database and return the created user
     // For demonstration, we will return the provided user data with a generated ID
+
+
     user.id = crypto.randomUUID();
+    userRepo.create({
+        id: user.id,
+        name: user.userName,
+        workout_plan_id_ref: user.workoutPlanId
+    } as UserEntity);
+    
     return {
         user,
         score: { points: 0, level: 1, dayStreak: 0 } as ScoreDto,

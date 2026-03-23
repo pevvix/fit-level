@@ -6,20 +6,30 @@
 curl -X POST http://localhost:3001/api/v1/workout-plan \
      -H "Content-Type: application/json" \
      -d '{
-          "userId": "1234565",
-          "name": "First Workout Plan",
-          "description" : "test description for the plan",
-          "activityTypeByDay": {
-            "MONDAY": ["running"],
-            "TUESDAY": [],
-            "WEDNESDAY": ["gym"],
-            "THURSDAY": [],
-            "FRIDAY": ["swimming"],
-            "SATURDAY": [],
-            "SUNDAY": []
-          }
-         }' | jq
+        "name": "Plan A",
+        "description": "test plan a",
+        "activityTypeByDay": {
+          "MONDAY": [
+            "yoga"
+          ],
+          "TUESDAY": ["bicycle"],
+          "WEDNESDAY": [],
+          "THURSDAY": [],
+          "FRIDAY": [
+            "swimming"
+          ],
+          "SATURDAY": [],
+          "SUNDAY": []
+        }
+  }' | jq
 ```
+
+## Get all WorkoutPlans
+```bash
+curl -X GET http://localhost:3001/api/v1/workout-plan | jq
+```
+
+
 ## Create User
 ```bash
 curl -X POST http://localhost:3001/api/v1/user \
