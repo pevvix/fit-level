@@ -16,12 +16,15 @@ export interface UserEntity {
   id: string;
   name: string;
   workout_plan_id_ref?: string | null;
+  points?: number;
+  level?: number;
+  day_streak?: number;
 }
 
 export interface ActivityRecordEntity {
   id: string;
   user_id_ref: string;
-  desription?: string; // Matching your schema typo
+  description?: string;
   activity_type?: string;
   exercise: number; // 0 or 1 for SQLite BOOLEAN
   activity_date?: string;

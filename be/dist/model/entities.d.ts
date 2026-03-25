@@ -1,63 +1,30 @@
-export declare const ActivityTypes: Readonly<{
-    readonly CARDIO: "cardio";
-    readonly STRENGTH: "strength";
-    readonly SWIMMING: "swimming";
-    readonly BICYCLE: "bicycle";
-    readonly YOGA: "yoga";
-    readonly RUNNING: "running";
-    readonly FLEXIBILITY: "flexibility";
-    readonly OTHERS: "others";
-}>;
-export type ActivityType = typeof ActivityTypes[keyof typeof ActivityTypes];
-type DayOfWeek = 'MONDAY' | 'TUESDAY' | 'WEDNESDAY' | 'THURSDAY' | 'FRIDAY' | 'SATURDAY' | 'SUNDAY';
-type ActivityTypeByDay = {
-    [key in DayOfWeek]: ActivityType[];
-};
-interface WorkoutPlanData {
+export interface WorkoutPlanEntity {
     id: string;
     name: string;
-    description: string;
-    activityTypeByDay?: ActivityTypeByDay;
+    description?: string;
+    activities_on_monday?: string;
+    activities_on_tuesday?: string;
+    activities_on_wednesday?: string;
+    activities_on_thursday?: string;
+    activities_on_friday?: string;
+    activities_on_saturday?: string;
+    activities_on_sunday?: string;
+    created_at: string;
 }
-export declare class WorkoutPlan {
+export interface UserEntity {
     id: string;
     name: string;
-    description: string;
-    activityTypeByDay: ActivityTypeByDay;
-    constructor(data: WorkoutPlanData);
-    createBlankPlan(): ActivityTypeByDay;
-    static from(obj: WorkoutPlanData): WorkoutPlan;
-}
-interface ActivityRecordData {
-    id: string;
-    activityType: ActivityType;
-    duration: number;
-    activityDate: Date | string;
-}
-export declare class ActivityRecord {
-    id: string;
-    activeityType: ActivityType;
-    duration: number;
-    activityDate: Date | string;
-    constructor(data: ActivityRecordData);
-    static from(obj: ActivityRecordData): ActivityRecord;
-}
-interface UserData {
-    id: string;
-    name: string;
-    workoutPlan: WorkoutPlan;
-    activities?: ActivityRecord[];
+    workout_plan_id_ref?: string | null;
     points?: number;
+    level?: number;
+    day_streak?: number;
 }
-export declare class User {
+export interface ActivityRecordEntity {
     id: string;
-    name: string;
-    workoutPlan: WorkoutPlan;
-    activities: ActivityRecord[];
-    points: number;
-    constructor(data: UserData);
-    getLevel(): string;
-    static from(obj: UserData): User;
+    user_id_ref: string;
+    description?: string;
+    activity_type?: string;
+    exercise: number;
+    activity_date?: string;
 }
-export {};
 //# sourceMappingURL=entities.d.ts.map

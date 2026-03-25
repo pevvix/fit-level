@@ -21,11 +21,22 @@ export class UserDAO {
     });
   }
 
-  async updatePlan(userId: string, planId: string | null): Promise<void> {
+
+  async getAll(): Promise<UserEntity[]> {
     return new Promise((resolve, reject) => {
-      this.db.run(`UPDATE user SET workout_plan_id_ref = ? WHERE id = ?`, [planId, userId], (err) => {
-        err ? reject(err) : resolve();
+      this.db.all(`SELECT * FROM user`, [], (err, rows) => {
+        err ? reject(err) : resolve(rows as UserEntity[]);
       });
     });
   }
+
+  async update (user: UserEntity): Promise<void> {
+    const sql = `UPDATE user SET name = ?, workout_plan_id_ref = ? WHERE id = ?`;
+    return new Promise((resolve, reject) => {
+      this.db.run(sql, [user.name, user.workout_plan_id_ref, user.id], (err) => {
+        err ? reject(err) : resolve();
+      });
+    }); 
+  }
 }
+

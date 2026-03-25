@@ -9,7 +9,7 @@ userRouter.post('/', async (req, res) => {
     if (!result.success) {
         return res.status(400).json({ errors: JSON.parse(result.error.message) });
     }
-    const newUser = createUser(result.data);
+    const newUser = await createUser(result.data);
     res.status(201).json(newUser);
     
 });
@@ -17,7 +17,7 @@ userRouter.post('/', async (req, res) => {
 userRouter.get('/', async (req, res) => {
     // Here you would typically retrieve all users from a database
     // For demonstration, we will return a list with a double dummy user
-    const users = getAllUsers();
+    const users = await getAllUsers();
 
     res.status(200).json(users);
 });
@@ -27,7 +27,10 @@ userRouter.get('/:userId', async (req, res) => {
 
     // Here you would typically retrieve the user's workout summary from a database
     // For demonstration, we will return a dummy summary
-    const summary = getUserById(userId);
+    const summary = await getUserById(userId);
+    if (!summary) {
+        return res.status(404).json({ error: `User with ID ${userId} not found` });
+    }
     res.status(200).json(summary);
 });
 
@@ -41,7 +44,7 @@ userRouter.put('/:userId', async (req, res) => {
 
     // Here you would typically update the user's information in a database
     // For demonstration, we will return a success message with the provided data
-    const updatedUser = updateUser(userId, updatedData.data);
+    const updatedUser = await updateUser(userId, updatedData.data);
 
     res.status(200).json({ message: `User ${userId} updated`, data: updatedData });
 }); 

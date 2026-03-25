@@ -1,127 +1,77 @@
-import { ScoreDto, UserDto, WorkoutPlanDto, WorkoutSummaryDto } from '../dto/dto';
-import { userRepo } from '../dao/dao-factory'; 
-import { UserEntity } from '../model/entities';
+import { ScoreDto, UserDto, WorkoutSummaryDto } from '../dto/dto';
+import { userRepo } from '../dao/dao-factory';
+import { UserEntity, } from '../model/entities';
+import { getWorkoutPlanById } from './workout-plan-service';
+// import { getPoints, getLevel, getDayStreak } from './user-stats-service';
 
-export function createUser(user: UserDto): WorkoutSummaryDto {
-    // Here you would typically save the new user to a database and return the created user
-    // For demonstration, we will return the provided user data with a generated ID
-
-
-    user.id = crypto.randomUUID();
-    userRepo.create({
-        id: user.id,
+function toUserEntity(user: UserDto): UserEntity {
+    return {
+        id: user.id || crypto.randomUUID(),
         name: user.userName,
         workout_plan_id_ref: user.workoutPlanId
-    } as UserEntity);
-    
+    } as UserEntity;
+}
+
+
+function toUserDto(user: UserEntity): UserDto {
     return {
-        user,
-        score: { points: 0, level: 1, dayStreak: 0 } as ScoreDto,
-        workoutPlan: { 
-            id: crypto.randomUUID(), 
-            name: 'Full Body Workout', 
-            description: 'A comprehensive full body workout plan', 
-            activityTypeByDay: {
-                MONDAY: [],
-                TUESDAY: [],
-                WEDNESDAY: [],
-                THURSDAY: [],
-                FRIDAY: [],
-                SATURDAY: [],
-                SUNDAY: []
-            } 
-        } as WorkoutPlanDto
-    } as WorkoutSummaryDto;
-};
+        id: user.id,
+        userName: user.name,
+        workoutPlanId: user.workout_plan_id_ref
+    } as UserDto;
+}
 
-export function getAllUsers(): WorkoutSummaryDto[] {
-    // Here you would typically retrieve all users from a database
-    // For demonstration, we will return a list with a double dummy user
-    return [
-        {
-            user: { id: 'user1', userName: 'John Doe' } as UserDto,
-            score: { points: 100, level: 5, dayStreak: 10 } as ScoreDto,
-            workoutPlan: { 
-                id: crypto.randomUUID(), 
-                name: 'Full Body Workout', 
-                description: 'A comprehensive full body workout plan', 
-                activityTypeByDay: {
-                    MONDAY: ['cardio'],
-                    TUESDAY: ['strength'],
-                    WEDNESDAY: ['yoga'],
-                    THURSDAY: [],
-                    FRIDAY: ['swimming'],
-                    SATURDAY: [],
-                    SUNDAY: ['flexibility']
-                } 
-            } as WorkoutPlanDto
-        } as WorkoutSummaryDto,
-        {
-            user: { id: 'user2', userName: 'Jane Smith' } as UserDto,
-            score: { points: 150, level: 7, dayStreak: 15 } as ScoreDto,
-            workoutPlan: { 
-                id: 'plan2', 
-                name: 'Cardio Blast', 
-                description: 'An intense cardio workout plan', 
-                activityTypeByDay: {
-                    MONDAY: ['cardio'],
-                    TUESDAY: ['cardio'],
-                    WEDNESDAY: ['cardio'],
-                    THURSDAY: [],
-                    FRIDAY: ['cardio'],
-                    SATURDAY: [],
-                    SUNDAY: []
-                } 
-            } as WorkoutPlanDto
-        } as WorkoutSummaryDto
-
-    ] as WorkoutSummaryDto[];
-};
-
-
-export function getUserById(userId: string): WorkoutSummaryDto | null {
-    // Here you would typically retrieve the user's workout summary from a database using the userId
-    // For demonstration, we will return a dummy summary if the userId matches a specific value
-    if (userId === 'user1') {
-        return {
-            user: { id: 'user1', userName: 'John Doe' } as UserDto,
-            score: { points: 100, level: 5, dayStreak: 10 } as ScoreDto,
-            workoutPlan: { 
-                id: crypto.randomUUID(), 
-                name: 'Full Body Workout', 
-                description: 'A comprehensive full body workout plan', 
-                activityTypeByDay: {
-                    MONDAY: ['cardio'],
-                    TUESDAY: ['strength'],
-                    WEDNESDAY: ['yoga'],
-                    THURSDAY: [],
-                    FRIDAY: ['swimming'],
-                    SATURDAY: [],
-                    SUNDAY: ['flexibility']
-                } 
-            } as WorkoutPlanDto
-        } as WorkoutSummaryDto;
-    }
-    return null;
-};
-
-export function updateUser(userId: string, userData: UserDto): WorkoutSummaryDto {
+function toScore(userEntity: UserEntity): ScoreDto {
     return {
-        user: userData ,
-        score: { points: 120, level: 6, dayStreak: 12 } as ScoreDto,
-        workoutPlan: { 
-            id: crypto.randomUUID(), 
-            name: 'Full Body Workout', 
-            description: 'A comprehensive full body workout plan', 
-            activityTypeByDay: {
-                MONDAY: ['cardio'],
-                TUESDAY: ['strength'],
-                WEDNESDAY: ['yoga'],
-                THURSDAY: [],
-                FRIDAY: ['swimming'],
-                SATURDAY: [],
-                SUNDAY: ['flexibility']
-            } 
-        } as WorkoutPlanDto
+        points: userEntity.points || 0,
+        level: userEntity.level || 1,
+        dayStreak: userEntity.day_streak || 0
+    } as ScoreDto;
+}
+
+async function toWorkoutSummaryDto(userEntity: UserEntity): Promise<WorkoutSummaryDto> {
+    const user = toUserDto(userEntity);
+    const score = toScore(userEntity);
+    const workoutPlan = user.workoutPlanId ? await getWorkoutPlanById(user.workoutPlanId) : null;
+    return {
+        user: user,
+        score: score,
+        workoutPlan: workoutPlan,
     } as WorkoutSummaryDto;
 }
+
+
+export async function createUser(userDto: UserDto): Promise<WorkoutSummaryDto> {
+    if (userDto.workoutPlanId) {
+        const workoutPlan = await getWorkoutPlanById(userDto.workoutPlanId);
+        if (!workoutPlan) {
+            throw new Error(`Workout plan with ID ${userDto.workoutPlanId} not found`);
+        }
+    }
+    let userEntity = toUserEntity(userDto);
+    userEntity.id = crypto.randomUUID();
+    await userRepo.create(userEntity);
+    return await toWorkoutSummaryDto(userEntity);
+}
+
+export async function getAllUsers(): Promise<WorkoutSummaryDto[]> {
+    const userEntities = await userRepo.getAll();
+    return await Promise.all(userEntities.map(user => toWorkoutSummaryDto(user)));
+}
+
+export async function getUserById(userId: string): Promise<WorkoutSummaryDto | null> {
+    const userEntity = await userRepo.findById(userId);
+    if (userEntity) {
+        return await toWorkoutSummaryDto(userEntity);
+    }
+    return null;
+}
+
+export async function updateUser(userId: string, userData: UserDto): Promise<WorkoutSummaryDto> {
+    userData.id = userId;
+    const userEntity = toUserEntity(userData);
+    await userRepo.update(userEntity);
+    return await toWorkoutSummaryDto(userEntity);
+}
+
+

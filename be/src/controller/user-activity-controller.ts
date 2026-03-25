@@ -1,9 +1,9 @@
 import express from 'express';
 import { activityRecordSchema } from '../dto/dto';
-import { createActivityRecord, getUserActivity } from '../service/user-activity-service';
+import { createActivityRecord, getUserActivities as getUserActivities } from '../service/user-activity-service';
 
 
-export const activityRouter = express.Router();
+export const activityRouter = express.Router({ mergeParams: true });
 
 activityRouter.post('/', async (req: express.Request, res: express.Response) => {  
     const  userId  = req.params.userId as string;
@@ -21,7 +21,7 @@ activityRouter.post('/', async (req: express.Request, res: express.Response) => 
 activityRouter.get('/', async (req: express.Request, res: express.Response) => {
     const  userId  = req.params.userId as string;
 
-    const activity = getUserActivity(userId);
+    const activities = await getUserActivities(userId);
 
-    res.status(200).json(activity);
+    res.status(200).json(activities);
 });

@@ -39,14 +39,29 @@ curl -X POST http://localhost:3001/api/v1/user \
   }' | jq
   ```
 
+## Get all Users
+```bash
+curl -X GET http://localhost:3001/api/v1/user | jq
+  ```
+
+## Get User by ID
+```bash
+curl -X GET http://localhost:3001/api/v1/user/6bb19a26-d9c0-4feb-8c94-274d4da78527 | jq
+  ```
+
+
 
 ## Create Activity Record
 ```bash
-curl -X POST http://localhost:3001/api/v1/user/:userId/activity \
+curl -X POST http://localhost:3001/api/v1/user/110e8400-e29b-11d4-a716-446655440001/activity \
   -H "Content-Type: application/json" \
   -d '{
-      "userId": "faeee6eb-6a59-44ff-b7e2-b0f4a923318c"
+      "userId": "110e8400-e29b-11d4-a716-446655440001"
   }' | jq
   ```
 
+## Get All Activity Records for user
+```bash
+curl -X GET http://localhost:3001/api/v1/user/110e8400-e29b-11d4-a716-446655440001/activity | jq
+  ```
 

@@ -10,7 +10,7 @@ interface WorkoutPlanData {
   activityTypeByDay: ActivityTypeByDay;
 }
 
-export class WorkoutPlan {
+class WorkoutPlan {
   id: string;
   name: string;
   description?: string;
@@ -44,7 +44,7 @@ interface ActivityRecordData {
   activityDate: Date;
 }
 
-export class ActivityRecord {
+class ActivityRecord {
   id: string;
   activeityType?: ActivityType;
   description?: string;
@@ -71,7 +71,7 @@ interface UserData {
   activities: ActivityRecord[];
 }
 
-export class User {
+class User {
   public readonly id: string;
   public readonly name: string;
   public readonly workoutPlan: WorkoutPlan;

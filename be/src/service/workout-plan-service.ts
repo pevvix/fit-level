@@ -38,7 +38,7 @@ function toWorkoutPlanDto(plan: WorkoutPlanEntity): WorkoutPlanDto {
 
 export async function createWorkoutPlan(workoutPlan: WorkoutPlanDto): Promise<WorkoutPlanDto> {
     workoutPlan.id = crypto.randomUUID();
-    await workoutPlanRepo.create(toWorkoutPlanEntity(workoutPlan) as WorkoutPlanEntity);
+    await workoutPlanRepo.create(toWorkoutPlanEntity(workoutPlan));
     return workoutPlan;
 }
 
@@ -57,6 +57,6 @@ export async function getWorkoutPlanById(id: string): Promise<WorkoutPlanDto | n
 
 export async function updateWorkoutPlan(id: string, workoutPlan: WorkoutPlanDto): Promise<WorkoutPlanDto> {
     workoutPlan.id = id;
-    await workoutPlanRepo.update(toWorkoutPlanEntity(workoutPlan) as WorkoutPlanEntity);
+    await workoutPlanRepo.update(toWorkoutPlanEntity(workoutPlan));
     return workoutPlan;
 }   

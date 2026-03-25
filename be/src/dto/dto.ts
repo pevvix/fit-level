@@ -43,7 +43,7 @@ export type ScoreDto = z.infer<typeof scoreSchema>;
 export const userSchema = z.object({
     id: z.uuidv4().optional(),
     workoutPlanId: z.uuidv4().optional(),
-    userName: z.string(),
+    userName: z.string()
 });
 
 export type UserDto = z.infer<typeof userSchema>;
