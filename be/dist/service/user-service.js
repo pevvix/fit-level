@@ -15,7 +15,7 @@ function toUserDto(user) {
         workoutPlanId: user.workout_plan_id_ref
     };
 }
-function toScore(userEntity) {
+function toScoreDto(userEntity) {
     return {
         points: userEntity.points || 0,
         level: userEntity.level || 1,
@@ -24,7 +24,7 @@ function toScore(userEntity) {
 }
 async function toWorkoutSummaryDto(userEntity) {
     const user = toUserDto(userEntity);
-    const score = toScore(userEntity);
+    const score = toScoreDto(userEntity);
     const workoutPlan = user.workoutPlanId ? await getWorkoutPlanById(user.workoutPlanId) : null;
     return {
         user: user,
@@ -58,7 +58,10 @@ export async function getUserById(userId) {
 export async function updateUser(userId, userData) {
     userData.id = userId;
     const userEntity = toUserEntity(userData);
-    await userRepo.update(userEntity);
+    await userRepo.updateUserDetails(userEntity);
     return await toWorkoutSummaryDto(userEntity);
+}
+export async function updateUserScore(userId, score) {
+    userRepo.updateUserScore(userId, score.points, score.level, score.dayStreak);
 }
 //# sourceMappingURL=user-service.js.map

@@ -5,8 +5,21 @@ import express from 'express';
 import cors from 'cors';
 import { userRouter } from './controller/user-contoller';
 import { activityRouter } from './controller/user-activity-controller';
+import { syncUserScores } from './service/score-sync';
 
 export const app = express();
+
+// Sync scores at startup (non-test environment)
+if (process.env.NODE_ENV !== 'test') {
+  (async () => {
+    try {
+      await syncUserScores();
+      console.log('syncUserScores completed');
+    } catch (err: any) {
+      console.error('syncUserScores failed:', err?.message || err);
+    }
+  })();
+}
 
 app.use(cors());
 app.use(express.json());

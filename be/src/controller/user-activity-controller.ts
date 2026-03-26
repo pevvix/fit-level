@@ -1,6 +1,6 @@
 import express from 'express';
 import { activityRecordSchema } from '../dto/dto';
-import { createActivityRecord, getUserActivities as getUserActivities } from '../service/user-activity-service';
+import { createActivityRecord, getUserActivities } from '../service/user-activity-service';
 
 
 export const activityRouter = express.Router({ mergeParams: true });
@@ -13,7 +13,11 @@ activityRouter.post('/', async (req: express.Request, res: express.Response) => 
         return res.status(400).json({ errors: JSON.parse(result.error.message) });
     }
 
-    const activityData = createActivityRecord(userId, result.data);
+    if(userId !== result.data.userId) {
+        return res.status(400).json({ error: `User ID in the path (${userId}) does not match user ID in the body (${result.data.userId})` });
+    }
+
+    const activityData = createActivityRecord(result.data);
 
     res.status(201).json({ message: `Activity record added for user ${userId}`, data: activityData });
 });

@@ -3,8 +3,8 @@ import { ActivityRecordEntity } from "../model/entities";
 export declare class ActivityRecordDAO {
     private db;
     constructor(db: sqlite3.Database);
-    create(record: ActivityRecordEntity): Promise<void>;
-    getByUserId(userId: string): Promise<ActivityRecordEntity[]>;
+    create(records: ActivityRecordEntity[] | ActivityRecordEntity): Promise<void>;
+    getActivitiesByUserId(userId: string): Promise<ActivityRecordEntity[]>;
     delete(id: string): Promise<void>;
 }
 //# sourceMappingURL=activity-record-dao.d.ts.map

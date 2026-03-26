@@ -21,7 +21,7 @@ function toUserDto(user: UserEntity): UserDto {
     } as UserDto;
 }
 
-function toScore(userEntity: UserEntity): ScoreDto {
+function toScoreDto(userEntity: UserEntity): ScoreDto {
     return {
         points: userEntity.points || 0,
         level: userEntity.level || 1,
@@ -31,7 +31,7 @@ function toScore(userEntity: UserEntity): ScoreDto {
 
 async function toWorkoutSummaryDto(userEntity: UserEntity): Promise<WorkoutSummaryDto> {
     const user = toUserDto(userEntity);
-    const score = toScore(userEntity);
+    const score = toScoreDto(userEntity);
     const workoutPlan = user.workoutPlanId ? await getWorkoutPlanById(user.workoutPlanId) : null;
     return {
         user: user,
@@ -70,8 +70,12 @@ export async function getUserById(userId: string): Promise<WorkoutSummaryDto | n
 export async function updateUser(userId: string, userData: UserDto): Promise<WorkoutSummaryDto> {
     userData.id = userId;
     const userEntity = toUserEntity(userData);
-    await userRepo.update(userEntity);
+    await userRepo.updateUserDetails(userEntity);
     return await toWorkoutSummaryDto(userEntity);
+}
+
+export async function updateUserScore(userId: string, score: ScoreDto): Promise<void> {
+   userRepo.updateUserScore(userId, score.points, score.level, score.dayStreak);
 }
 
 

@@ -30,10 +30,20 @@ export class UserDAO {
     });
   }
 
-  async update (user: UserEntity): Promise<void> {
+  async updateUserDetails (user: UserEntity): Promise<void> {
     const sql = `UPDATE user SET name = ?, workout_plan_id_ref = ? WHERE id = ?`;
     return new Promise((resolve, reject) => {
       this.db.run(sql, [user.name, user.workout_plan_id_ref, user.id], (err) => {
+        err ? reject(err) : resolve();
+      });
+    }); 
+  }
+
+
+  async updateUserScore(userId: string, points: number, level: number, dayStreak: number): Promise<void> {
+    const sql = `UPDATE user SET points = ?, level = ?, day_streak = ? WHERE id = ?`;
+    return new Promise((resolve, reject) => {
+      this.db.run(sql, [points, level, dayStreak, userId], (err) => {
         err ? reject(err) : resolve();
       });
     }); 

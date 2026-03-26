@@ -19,19 +19,18 @@ function toActivityRecordDto(activityRecord) {
         activityDate: new Date(activityRecord.activity_date || new Date())
     };
 }
-export async function createActivityRecord(userId, activityRecord) {
-    return {
-        id: activityRecord.id,
-        userId,
-        activityType: activityRecord.activityType,
-        description: activityRecord.description,
-        exercise: activityRecord.exercise,
-        activityDate: activityRecord.activityDate
-    };
+export async function createActivityRecord(activityRecord) {
+    const activityRecordEntity = toActivityRecordEntity(activityRecord);
+    activityRecordRepo.create(activityRecordEntity);
+    activityRecord.id = activityRecordEntity.id;
+    return activityRecord;
 }
 ;
+export async function createActivityRecords(activityRecords) {
+    activityRecordRepo.create(activityRecords.map(toActivityRecordEntity));
+}
 export async function getUserActivities(userId) {
-    const records = await activityRecordRepo.getByUserId(userId);
+    const records = await activityRecordRepo.getActivitiesByUserId(userId);
     return records.map(record => toActivityRecordDto(record));
 }
 ;

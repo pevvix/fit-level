@@ -6,6 +6,7 @@ export declare class UserDAO {
     create(user: UserEntity): Promise<void>;
     findById(id: string): Promise<UserEntity | undefined>;
     getAll(): Promise<UserEntity[]>;
-    update(user: UserEntity): Promise<void>;
+    updateUserDetails(user: UserEntity): Promise<void>;
+    updateUserScore(userId: string, points: number, level: number, dayStreak: number): Promise<void>;
 }
 //# sourceMappingURL=user-dao.d.ts.map

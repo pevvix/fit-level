@@ -29,7 +29,7 @@ CREATE INDEX idx_user__workout_plan_id_ref ON user(workout_plan_id_ref);
 CREATE TABLE activity_record(
 	id TEXT PRIMARY KEY NOT NULL,
 	user_id_ref TEXT NOT NULL,
-	desription TEXT,
+	description TEXT,
 	activity_type TEXT,
 	exercise BOOLEAN NOT NULL,
 	activity_date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,

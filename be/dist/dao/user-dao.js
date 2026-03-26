@@ -25,10 +25,18 @@ export class UserDAO {
             });
         });
     }
-    async update(user) {
+    async updateUserDetails(user) {
         const sql = `UPDATE user SET name = ?, workout_plan_id_ref = ? WHERE id = ?`;
         return new Promise((resolve, reject) => {
             this.db.run(sql, [user.name, user.workout_plan_id_ref, user.id], (err) => {
+                err ? reject(err) : resolve();
+            });
+        });
+    }
+    async updateUserScore(userId, points, level, dayStreak) {
+        const sql = `UPDATE user SET points = ?, level = ?, day_streak = ? WHERE id = ?`;
+        return new Promise((resolve, reject) => {
+            this.db.run(sql, [points, level, dayStreak, userId], (err) => {
                 err ? reject(err) : resolve();
             });
         });

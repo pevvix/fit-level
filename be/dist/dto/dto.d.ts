@@ -183,6 +183,7 @@ export declare const workoutSchema: z.ZodObject<{
 }, z.core.$strip>;
 export type WorkoutPlanDto = z.infer<typeof workoutSchema>;
 export type WorkoutSummaryDto = {
+    id: any;
     user: UserDto;
     score?: ScoreDto;
     workoutPlan?: WorkoutPlanDto;
