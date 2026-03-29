@@ -19,7 +19,7 @@ export class ActivityRecordDAO {
             return;
         }
         const placeholders = normalizedRecords.map(() => '(?, ?, ?, ?, ?, ?)').join(', ');
-        const sql = `INSERT INTO activity_record (id, user_id_ref, desription, activity_type, exercise, activity_date) VALUES ${placeholders}`;
+        const sql = `INSERT INTO activity_record (id, user_id_ref, description, activity_type, exercise, activity_date) VALUES ${placeholders}`;
         const params = normalizedRecords.flatMap((record) => [
             record.id,
             record.user_id_ref,

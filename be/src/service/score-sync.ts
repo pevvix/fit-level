@@ -1,23 +1,28 @@
 import { ActivityRecordDto, ScoreDto, UserDto, WorkoutPlanDto } from "../dto/dto";
-import { getAllUsers, updateUserScore } from "./user-service";
+import { getAllUserWorkoutSummaries, updateUserScore } from "./user-service";
 import { createActivityRecords, getUserActivities } from "./user-activity-service";
+import cron from 'node-cron';
+
+// run every day at midnight to sync user scores based on their activities and workout plans
+cron.schedule('0 0 * * *', syncUserScores);
 
 export async function syncUserScores() {
-  const users = await getAllUsers();
-  users.forEach(async (user) => {
-    const activities = await getUserActivities(user.id);
-    if (!user.workoutPlan) {
+  const workoutSummaries = await getAllUserWorkoutSummaries();
+  workoutSummaries.forEach(async (workoutSummary) => {
+    if (!workoutSummary.workoutPlan) {
       return;
     }
-
+    const userId = workoutSummary.user.id as string;
+    const activities = await getUserActivities(userId);
+    
     const sortedHistoricalActivities = activities.sort((a, b) => new Date(a.activityDate).getTime() - new Date(b.activityDate).getTime());
-    const missedActivities = getMissedActivityGap(user.user, user.workoutPlan, sortedHistoricalActivities);
+    const missedActivities = getMissedActivityGap(workoutSummary.user, workoutSummary.workoutPlan, sortedHistoricalActivities);
 
     const allActivities = [...sortedHistoricalActivities, ...missedActivities];
 
     createActivityRecords(missedActivities);
 
-    updateUserScore(user.id, {
+    updateUserScore(userId, {
       points: getPoints(allActivities),
       level: getLevel(allActivities),
       dayStreak: getDayStreak(allActivities)

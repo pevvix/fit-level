@@ -10,12 +10,12 @@ VALUES
 
 INSERT INTO user (id, name, workout_plan_id_ref, points, level, day_streak)
 VALUES 
-('110e8400-e29b-11d4-a716-446655440001', 'Alice Johnson', '550e8400-e29b-41d4-a716-446655440000', '123','2','5'),
-('220e8400-e29b-22d4-a716-446655440002', 'Bob Smith', '7b3c9d1e-1234-4567-890a-bcdef0123456', '43','1','2'),
-('330e8400-e29b-33d4-a716-446655440003', 'Charlie Brown', NULL, '432','4','23'); -- User with no assigned plan
+('110e8400-e29b-11d4-a716-446655440001', 'Alice Johnson', '550e8400-e29b-41d4-a716-446655440000', 0,1,0),
+('220e8400-e29b-22d4-a716-446655440002', 'Bob Smith', '7b3c9d1e-1234-4567-890a-bcdef0123456', 0,1,0),
+('330e8400-e29b-33d4-a716-446655440003', 'Charlie Brown', NULL, 0,1,0); 
 
 
-INSERT INTO activity_record (id, user_id_ref, desription, activity_type, exercise, activity_date)
+INSERT INTO activity_record (id, user_id_ref, description, activity_type, exercise, activity_date)
 VALUES 
 ('a1b2c3d4-e5f6-4g7h-8i9j-k0l1m2n3o4p5', '110e8400-e29b-11d4-a716-446655440001', 'Upper Body Power Day', 'strength', true, '2026-03-22 07:30:00'),
 ('b2c3d4e5-f6g7-5h8i-9j0k-l1m2n3o4p5q6', '220e8400-e29b-22d4-a716-446655440002', 'Morning 10k Run', 'cardio', true, '2026-03-22 06:00:00'),

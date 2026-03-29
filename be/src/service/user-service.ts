@@ -54,12 +54,12 @@ export async function createUser(userDto: UserDto): Promise<WorkoutSummaryDto> {
     return await toWorkoutSummaryDto(userEntity);
 }
 
-export async function getAllUsers(): Promise<WorkoutSummaryDto[]> {
+export async function getAllUserWorkoutSummaries(): Promise<WorkoutSummaryDto[]> {
     const userEntities = await userRepo.getAll();
     return await Promise.all(userEntities.map(user => toWorkoutSummaryDto(user)));
 }
 
-export async function getUserById(userId: string): Promise<WorkoutSummaryDto | null> {
+export async function getUserWorkoutSummaryById(userId: string): Promise<WorkoutSummaryDto | null> {
     const userEntity = await userRepo.findById(userId);
     if (userEntity) {
         return await toWorkoutSummaryDto(userEntity);
