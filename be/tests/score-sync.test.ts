@@ -1,6 +1,5 @@
 import { jest, test, expect, describe, beforeEach, afterEach } from '@jest/globals';
 import { UserDto, WorkoutPlanDto, ActivityRecordDto, WorkoutSummaryDto } from '../src/dto/dto';
-import { fa } from 'zod/locales';
 
 // 1. Setup the mocks FIRST
 jest.unstable_mockModule('../src/service/user-service', () => ({
@@ -38,7 +37,7 @@ describe('syncUserScores with Mocked Date', () => {
         name: 'Daily Grind',
         activityTypeByDay: {
             MONDAY: ['cardio'],
-            TUESDAY: ['strength'],
+            TUESDAY: ['weight lifting'],
             WEDNESDAY: [],
             THURSDAY: [],
             FRIDAY: ['swimming'],

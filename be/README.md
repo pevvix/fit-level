@@ -1,5 +1,13 @@
 # FitLevel BE
 
+## DB Migrations
+
+- Add SQL file
+
+```bash
+  npm run db:create init_schema
+  npm run db:create alter_user_table
+```
 
 ## Create Workout
 ```bash

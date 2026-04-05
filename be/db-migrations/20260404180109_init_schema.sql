@@ -1,3 +1,4 @@
+-- migrate:up
 CREATE TABLE workout_plan (
 	id TEXT PRIMARY KEY NOT NULL,
 	name TEXT NOT NULL UNIQUE,
@@ -37,3 +38,9 @@ CREATE TABLE activity_record(
 );
 CREATE INDEX idx_activity_record__user_id_ref ON activity_record(user_id_ref);
 
+
+
+-- migrate:down
+drop table if exists activity_record;
+drop table if exists user;
+drop table if exists workout_plan;

@@ -1,7 +1,17 @@
 {
-  "jest.nodeEnv": {
-    "NODE_OPTIONS": "--experimental-vm-modules"
-  },
-  "jest.jestCommandLine": "npm test --",
-  "jest.debugMode": true
+  "jestrunner.jestCommand": "node_modules/.bin/jest",
+  "jestrunner.debugOptions": {
+    "args": [
+      "--runInBand",
+      "--forceExit",
+      "--no-cache",
+      "--env=node"
+    ],
+    "runtimeArgs": [
+      "--experimental-vm-modules"
+    ],
+    "env": {
+      "NODE_ENV": "test"
+    }
+  }
 }

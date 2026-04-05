@@ -4,16 +4,21 @@ import { createWorkoutPlan, getAllWorkoutPlans, getWorkoutPlanById, updateWorkou
 
 export const workoutRouter = express.Router();
 
-workoutRouter.post('/',async (req: express.Request, res: express.Response) => {
-    const result =workoutSchema.safeParse(req.body);
+workoutRouter.post('/', async (req: express.Request, res: express.Response) => {
+    const result = workoutSchema.safeParse(req.body);
 
     if (!result.success) {
         return res.status(400).json({ errors: JSON.parse(result.error.message) });
     }
 
-    const newWorkoutPlan = await createWorkoutPlan(result.data);
-    
-    res.status(201).json(newWorkoutPlan);
+    try {
+        const newWorkoutPlan = await createWorkoutPlan(result.data);
+        res.status(201).json(newWorkoutPlan);
+    } catch (err: any) {
+        console.error('Error creating workout plan:', err);
+        return res.status(500).json({ error: 'Failed to create workout plan' });
+    }
+
 });
 
 workoutRouter.get('/', async (req: express.Request, res: express.Response) => {
@@ -25,7 +30,7 @@ workoutRouter.get('/', async (req: express.Request, res: express.Response) => {
 workoutRouter.get('/:id', async (req: express.Request, res: express.Response) => {
     const workoutPlanId = req.params.id as string;
     const workoutPlan = await getWorkoutPlanById(workoutPlanId);
-   
+
     if (!workoutPlan) {
         return res.status(404).json({ error: 'Workout plan not found' });
     }
@@ -42,6 +47,6 @@ workoutRouter.put('/:id', async (req: express.Request, res: express.Response) =>
     }
 
     const updatedWorkoutPlan = await updateWorkoutPlan(workoutPlanId, result.data);
-    
+
     res.status(200).json(updatedWorkoutPlan);
 });

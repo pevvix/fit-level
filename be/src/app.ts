@@ -1,25 +1,15 @@
 
-import 'dotenv/config';
 import express from 'express';
- import { workoutRouter } from './controller/workout-controller';
+import dotenv from 'dotenv';
+import { workoutRouter } from './controller/workout-controller';
 import cors from 'cors';
 import { userRouter } from './controller/user-contoller';
 import { activityRouter } from './controller/user-activity-controller';
 import { syncUserScores } from './service/score-sync';
 
-export const app = express();
+dotenv.config({ path:  process.env.NODE_ENV === 'test' ? '.env.test' : '.env' });
 
-// Sync scores at startup (non-test environment)
-if (process.env.NODE_ENV !== 'test') {
-  (async () => {
-    try {
-      await syncUserScores();
-      console.log('syncUserScores completed');
-    } catch (err: any) {
-      console.error('syncUserScores failed:', err?.message || err);
-    }
-  })();
-}
+export const app = express();
 
 app.use(cors());
 app.use(express.json());
@@ -49,5 +39,15 @@ app.use((err: any, req: express.Request, res: express.Response, next: express.Ne
 
 
 if (process.env.NODE_ENV !== 'test') {
-  app.listen(3001);
+  // Sync scores at startup (non-test environment)
+  (async () => {
+    try {
+      await syncUserScores();
+      console.log('syncUserScores completed');
+    } catch (err: any) {
+      console.error('syncUserScores failed:', err?.message || err);
+    }
+  })();
+
+  app.listen(process.env.PORT);
 }

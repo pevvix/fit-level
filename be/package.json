@@ -6,9 +6,17 @@
   "author": "artur",
   "type": "module",
   "scripts": {
-    "dev": "tsx watch src/app.ts",
+    "db:create": "dbmate -d ./db-migrations new",
+    
+    "db:migrate": "dotenv -e .env -- dbmate -d ./db-migrations --no-dump-schema up",
+    
+    "db:clean:test": "dotenv -e .env.test -- dbmate drop || true",
+    "db:migrate:test": "dotenv -e .env.test -- dbmate -d ./db-migrations --no-dump-schema up",
+    
+    "test": "npm run db:clean:test && npm run db:migrate:test && NODE_ENV=test NODE_OPTIONS=--experimental-vm-modules npx jest --detectOpenHandles --forceExit" ,
+    
+    "dev": "npm run db:migrate && dotenv -e .env -- tsx watch src/app.ts",
     "build": "tsc",
-    "test": "NODE_OPTIONS=--experimental-vm-modules npx jest",
     "start": "node dist/app.js"
   },
   "dependencies": {
@@ -26,6 +34,9 @@
     "@types/express": "^5.0.6",
     "@types/jest": "^30.0.0",
     "@types/node": "^25.3.3",
+    "@types/supertest": "^7.2.0",
+    "dbmate": "^2.32.0",
+    "dotenv-cli": "^11.0.0",
     "jest": "^30.2.0",
     "nodemon": "^3.1.11",
     "supertest": "^7.2.2",
