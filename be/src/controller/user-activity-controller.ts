@@ -17,9 +17,9 @@ activityRouter.post('/', async (req: express.Request, res: express.Response) => 
         return res.status(400).json({ error: `User ID in the path (${userId}) does not match user ID in the body (${result.data.userId})` });
     }
 
-    const activityData = createActivityRecord(result.data);
+    const activityData = await createActivityRecord(result.data);
 
-    res.status(201).json({ message: `Activity record added for user ${userId}`, data: activityData });
+    res.status(201).json(activityData);
 });
 
 activityRouter.get('/', async (req: express.Request, res: express.Response) => {

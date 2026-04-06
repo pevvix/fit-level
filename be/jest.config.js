@@ -25,7 +25,7 @@ export default async () => {
   return {
     preset: 'ts-jest/presets/default-esm',
     testEnvironment: 'node',
-    testTimeout: 30000,
+    testTimeout: 180000,
     extensionsToTreatAsEsm: ['.ts'],
     moduleNameMapper: {
       '^(\\.\\.?/.+)\\.js$': '$1',

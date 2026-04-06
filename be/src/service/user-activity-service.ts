@@ -2,6 +2,7 @@ import e from "express";
 import { activityRecordRepo } from "../dao/dao-factory";
 import { ActivityRecordDto } from "../dto/dto";
 import { ActivityRecordEntity } from "../model/entities";
+import { recalculateAndUpdateUserScore, recalculateAndUpdateUserScoreByUserId } from "./score-sync";
 
 function toActivityRecordEntity(activityRecord: ActivityRecordDto): ActivityRecordEntity {
     return {
@@ -28,13 +29,16 @@ function toActivityRecordDto(activityRecord: ActivityRecordEntity): ActivityReco
 
 export async function createActivityRecord(activityRecord: ActivityRecordDto): Promise<ActivityRecordDto> {
     const activityRecordEntity = toActivityRecordEntity(activityRecord);
-    activityRecordRepo.create(activityRecordEntity);
+    await activityRecordRepo.create(activityRecordEntity);
     activityRecord.id = activityRecordEntity.id;
+
+    recalculateAndUpdateUserScoreByUserId(activityRecord.userId);
+
     return activityRecord;
 };
 
 export async function createActivityRecords(activityRecords: ActivityRecordDto[]) {
-    activityRecordRepo.create(activityRecords.map(toActivityRecordEntity));
+    await activityRecordRepo.create(activityRecords.map(toActivityRecordEntity));
 }
 
 export async function getUserActivities(userId: string): Promise<ActivityRecordDto[]> {

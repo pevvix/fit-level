@@ -1,5 +1,5 @@
-import { ActivityRecordDto, ScoreDto, UserDto, WorkoutPlanDto } from "../dto/dto";
-import { getAllUserWorkoutSummaries, updateUserScore } from "./user-service";
+import { ActivityRecordDto, ScoreDto, UserDto, WorkoutPlanDto, WorkoutSummaryDto } from "../dto/dto";
+import { getAllUserWorkoutSummaries, getUserWorkoutSummaryById, updateUserScore } from "./user-service";
 import { createActivityRecords, getUserActivities } from "./user-activity-service";
 import cron from 'node-cron';
 
@@ -8,27 +8,37 @@ cron.schedule('0 0 * * *', syncUserScores);
 
 export async function syncUserScores() {
   const workoutSummaries = await getAllUserWorkoutSummaries();
-  workoutSummaries.forEach(async (workoutSummary) => {
-    if (!workoutSummary.workoutPlan) {
-      return;
-    }
-    const userId = workoutSummary.user.id as string;
-    const activities = await getUserActivities(userId);
-    
-    const sortedHistoricalActivities = activities.sort((a, b) => new Date(a.activityDate).getTime() - new Date(b.activityDate).getTime());
-    const missedActivities = getMissedActivityGap(workoutSummary.user, workoutSummary.workoutPlan, sortedHistoricalActivities);
+  workoutSummaries.forEach(async (workoutSummary) => recalculateAndUpdateUserScore(workoutSummary));
+}
 
-    const allActivities = [...sortedHistoricalActivities, ...missedActivities];
+export async function recalculateAndUpdateUserScoreByUserId(userId: string) {
+  const workoutSummary = await getUserWorkoutSummaryById(userId);
+  if (workoutSummary) {
+    recalculateAndUpdateUserScore(workoutSummary);
+  }
+}
 
-    createActivityRecords(missedActivities);
+export async function recalculateAndUpdateUserScore(workoutSummary: WorkoutSummaryDto) {
+  if (!workoutSummary.workoutPlan) {
+    return;
+  }
+  const userId = workoutSummary.user.id as string;
+  const activities = await getUserActivities(userId);
+  // const lastActivity = await getUserLastActivity(userId);
 
-    updateUserScore(userId, {
-      points: getPoints(allActivities),
-      level: getLevel(allActivities),
-      dayStreak: getDayStreak(allActivities)
-    } as ScoreDto);
+  const sortedHistoricalActivities = activities.sort((a, b) => new Date(a.activityDate).getTime() - new Date(b.activityDate).getTime());
+  const missedActivities = getMissedActivityGap(workoutSummary.user, workoutSummary.workoutPlan, sortedHistoricalActivities);
 
-  });
+  const allActivities = [...sortedHistoricalActivities, ...missedActivities];
+
+  createActivityRecords(missedActivities);
+
+  updateUserScore(userId, {
+    points: getPoints(allActivities),
+    level: getLevel(allActivities),
+    dayStreak: getDayStreak(allActivities)
+  } as ScoreDto);
+
 }
 
 const weekDays = ['SUNDAY', 'MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY'] as const;
