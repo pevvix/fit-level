@@ -11,34 +11,39 @@ export async function syncUserScores() {
   workoutSummaries.forEach(async (workoutSummary) => recalculateAndUpdateUserScore(workoutSummary));
 }
 
-export async function recalculateAndUpdateUserScoreByUserId(userId: string) {
+export async function recalculateAndUpdateUserScoreByUserId(userId: string) : Promise<ScoreDto | undefined> {
   const workoutSummary = await getUserWorkoutSummaryById(userId);
   if (workoutSummary) {
-    recalculateAndUpdateUserScore(workoutSummary);
+    return recalculateAndUpdateUserScore(workoutSummary);
   }
+  return undefined;
 }
 
-export async function recalculateAndUpdateUserScore(workoutSummary: WorkoutSummaryDto) {
+export async function recalculateAndUpdateUserScore(workoutSummary: WorkoutSummaryDto): Promise<ScoreDto | undefined> {
   if (!workoutSummary.workoutPlan) {
-    return;
+    return workoutSummary.score;
   }
   const userId = workoutSummary.user.id as string;
   const activities = await getUserActivities(userId);
-  // const lastActivity = await getUserLastActivity(userId);
 
   const sortedHistoricalActivities = activities.sort((a, b) => new Date(a.activityDate).getTime() - new Date(b.activityDate).getTime());
   const missedActivities = getMissedActivityGap(workoutSummary.user, workoutSummary.workoutPlan, sortedHistoricalActivities);
 
   const allActivities = [...sortedHistoricalActivities, ...missedActivities];
 
-  createActivityRecords(missedActivities);
+  if (missedActivities && missedActivities.length > 0) {
+    createActivityRecords(missedActivities);
+  }
 
-  updateUserScore(userId, {
+  const score = {
     points: getPoints(allActivities),
     level: getLevel(allActivities),
     dayStreak: getDayStreak(allActivities)
-  } as ScoreDto);
+  } as ScoreDto;
 
+  updateUserScore(userId, score);
+
+  return score;
 }
 
 const weekDays = ['SUNDAY', 'MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY'] as const;
@@ -97,16 +102,22 @@ function getDayStreak(activites: ActivityRecordDto[]): number {
   return currentStreak;
 }
 
+export const REWARD_POINTS = 10;
+export const PENALTY_POINTS = 5;
+
 function getPoints(activites: ActivityRecordDto[]): number {
+ 
   const totalPoints = activites.reduce((totalPoints, activity) =>
-    activity.exercise ? totalPoints + 10 : totalPoints - 5, 0);
+    activity.exercise ? totalPoints + REWARD_POINTS : totalPoints - PENALTY_POINTS, 0);
   return totalPoints < 0 ? 0 : totalPoints;
 }
 
 function getLevel(activites: ActivityRecordDto[]): number {
   const points = getPoints(activites);
-  return Math.floor(points / 100) + 1;
+  return getLevelFromPoints(points);
 }
 
-
+export function getLevelFromPoints(points: number) : number {
+  return Math.floor(points / 100) + 1;
+}
 

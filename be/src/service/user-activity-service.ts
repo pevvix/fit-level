@@ -1,8 +1,8 @@
-import e from "express";
 import { activityRecordRepo } from "../dao/dao-factory";
-import { ActivityRecordDto } from "../dto/dto";
+import { ActivityRecordDto, ScoreDto } from "../dto/dto";
 import { ActivityRecordEntity } from "../model/entities";
-import { recalculateAndUpdateUserScore, recalculateAndUpdateUserScoreByUserId } from "./score-sync";
+import { getLevelFromPoints, PENALTY_POINTS, recalculateAndUpdateUserScoreByUserId, REWARD_POINTS } from "./score-sync";
+import { updateUser, updateUserScore } from "./user-service";
 
 function toActivityRecordEntity(activityRecord: ActivityRecordDto): ActivityRecordEntity {
     return {
@@ -27,13 +27,25 @@ function toActivityRecordDto(activityRecord: ActivityRecordEntity): ActivityReco
     } as ActivityRecordDto;
 }
 
-export async function createActivityRecord(activityRecord: ActivityRecordDto): Promise<ActivityRecordDto> {
+export async function createActivityRecordAndRecalculateScore(activityRecord: ActivityRecordDto): Promise<ActivityRecordDto> {
+    // add "missed" activity revcords if any for the user
+    const score = await recalculateAndUpdateUserScoreByUserId(activityRecord.userId);
+
     const activityRecordEntity = toActivityRecordEntity(activityRecord);
     await activityRecordRepo.create(activityRecordEntity);
     activityRecord.id = activityRecordEntity.id;
 
-    recalculateAndUpdateUserScoreByUserId(activityRecord.userId);
-
+    if(score) {
+        const points = score.points + (activityRecordEntity.exercise ? REWARD_POINTS : -PENALTY_POINTS);
+        const level = getLevelFromPoints(points);
+        const dayStreak = activityRecordEntity.exercise ? score.dayStreak + 1 : 0;
+        updateUserScore(activityRecord.userId, {
+            points: points,
+            level: level,
+            dayStreak: dayStreak
+        } as ScoreDto);
+    }
+    
     return activityRecord;
 };
 

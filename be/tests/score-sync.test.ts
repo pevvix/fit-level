@@ -5,6 +5,7 @@ import { UserDto, WorkoutPlanDto, ActivityRecordDto, WorkoutSummaryDto } from '.
 jest.unstable_mockModule('../src/service/user-service', () => ({
     getAllUserWorkoutSummaries: jest.fn(),
     updateUserScore: jest.fn(),
+    getUserWorkoutSummaryById: jest.fn()
 }));
 
 jest.unstable_mockModule('../src/service/user-activity-service', () => ({
