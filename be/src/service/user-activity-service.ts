@@ -1,7 +1,7 @@
 import { activityRecordRepo } from "../dao/dao-factory";
 import { ActivityRecordDto, ScoreDto } from "../dto/dto";
 import { ActivityRecordEntity } from "../model/entities";
-import { getLevelFromPoints, PENALTY_POINTS, recalculateAndUpdateUserScoreByUserId, REWARD_POINTS } from "./score-sync";
+import { calculateLevel, PENALTY_POINTS, recalculateAndUpdateUserScoreByUserId, REWARD_POINTS } from "./calculate-user-scores-service";
 import { updateUser, updateUserScore } from "./user-service";
 
 function toActivityRecordEntity(activityRecord: ActivityRecordDto): ActivityRecordEntity {
@@ -28,24 +28,20 @@ function toActivityRecordDto(activityRecord: ActivityRecordEntity): ActivityReco
 }
 
 export async function createActivityRecordAndRecalculateScore(activityRecord: ActivityRecordDto): Promise<ActivityRecordDto> {
-    // add "missed" activity revcords if any for the user
+    // add "missed" activity records if any for the user
     const score = await recalculateAndUpdateUserScoreByUserId(activityRecord.userId);
 
     const activityRecordEntity = toActivityRecordEntity(activityRecord);
     await activityRecordRepo.create(activityRecordEntity);
     activityRecord.id = activityRecordEntity.id;
 
-    if(score) {
+    if (score) {
         const points = score.points + (activityRecordEntity.exercise ? REWARD_POINTS : -PENALTY_POINTS);
-        const level = getLevelFromPoints(points);
+        const level = calculateLevel(points);
         const dayStreak = activityRecordEntity.exercise ? score.dayStreak + 1 : 0;
-        updateUserScore(activityRecord.userId, {
-            points: points,
-            level: level,
-            dayStreak: dayStreak
-        } as ScoreDto);
+        updateUserScore(activityRecord.userId, { points: points, level: level, dayStreak: dayStreak });
     }
-    
+
     return activityRecord;
 };
 
@@ -56,6 +52,12 @@ export async function createActivityRecords(activityRecords: ActivityRecordDto[]
 export async function getUserActivities(userId: string): Promise<ActivityRecordDto[]> {
     const records = await activityRecordRepo.getActivitiesByUserId(userId);
     return records.map(record => toActivityRecordDto(record));
+
+};
+
+export async function getUserLastActivity(userId: string): Promise<ActivityRecordDto | null> {
+    const record = await activityRecordRepo.getUserLastActivity(userId);
+    return record ? toActivityRecordDto(record) : null;
 
 };
 

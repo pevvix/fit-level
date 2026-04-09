@@ -2,7 +2,7 @@ import sqlite3 from "sqlite3";
 import { ActivityRecordEntity } from "../model/entities";
 
 export class ActivityRecordDAO {
-  constructor(private db: sqlite3.Database) {}
+  constructor(private db: sqlite3.Database) { }
 
 
   async create(records: ActivityRecordEntity[] | ActivityRecordEntity): Promise<void> {
@@ -38,6 +38,13 @@ export class ActivityRecordDAO {
     });
   }
 
+  async getUserLastActivity(userId: string): Promise<ActivityRecordEntity> {
+    return new Promise((resolve, reject) => {
+      this.db.get(`SELECT * FROM activity_record WHERE user_id_ref = ? order by activity_date desc limit 1`, [userId], (err, row) => {
+        err ? reject(err) : resolve(row as ActivityRecordEntity);
+      });
+    });
+  }
   async delete(id: string): Promise<void> {
     return new Promise((resolve, reject) => {
       this.db.run(`DELETE FROM activity_record WHERE id = ?`, [id], (err) => {

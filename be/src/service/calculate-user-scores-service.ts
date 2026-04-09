@@ -1,45 +1,60 @@
 import { ActivityRecordDto, ScoreDto, UserDto, WorkoutPlanDto, WorkoutSummaryDto } from "../dto/dto";
 import { getAllUserWorkoutSummaries, getUserWorkoutSummaryById, updateUserScore } from "./user-service";
-import { createActivityRecords, getUserActivities } from "./user-activity-service";
+import { createActivityRecords, getUserActivities, getUserLastActivity } from "./user-activity-service";
 import cron from 'node-cron';
 
 // run every day at midnight to sync user scores based on their activities and workout plans
-cron.schedule('0 0 * * *', syncUserScores);
+cron.schedule('0 0 * * *', recalculateUserScores);
 
-export async function syncUserScores() {
+const EMPTY_SCORE = {
+  points: 0,
+  level: 1,
+  dayStreak: 0
+} as ScoreDto;
+
+export async function recalculateUserScores() {
   const workoutSummaries = await getAllUserWorkoutSummaries();
   workoutSummaries.forEach(async (workoutSummary) => recalculateAndUpdateUserScore(workoutSummary));
 }
 
-export async function recalculateAndUpdateUserScoreByUserId(userId: string) : Promise<ScoreDto | undefined> {
+export async function recalculateAndUpdateUserScoreByUserId(userId: string, fromUserLastActivity: boolean = true): Promise<ScoreDto> {
   const workoutSummary = await getUserWorkoutSummaryById(userId);
   if (workoutSummary) {
-    return recalculateAndUpdateUserScore(workoutSummary);
+    return recalculateAndUpdateUserScore(workoutSummary, fromUserLastActivity);
   }
-  return undefined;
+  return EMPTY_SCORE;
 }
 
-export async function recalculateAndUpdateUserScore(workoutSummary: WorkoutSummaryDto): Promise<ScoreDto | undefined> {
+export async function recalculateAndUpdateUserScore(workoutSummary: WorkoutSummaryDto, fromUserLastActivity: boolean = true): Promise<ScoreDto> {
   if (!workoutSummary.workoutPlan) {
-    return workoutSummary.score;
+    return EMPTY_SCORE;
   }
   const userId = workoutSummary.user.id as string;
-  const activities = await getUserActivities(userId);
+
+  let activities: ActivityRecordDto[] = [];
+  if (fromUserLastActivity) {
+    const lastActivity = await getUserLastActivity(userId)
+    if (lastActivity) {
+      activities = [lastActivity];
+    }
+  }
+  else {
+    activities = await getUserActivities(userId);
+  }
 
   const sortedHistoricalActivities = activities.sort((a, b) => new Date(a.activityDate).getTime() - new Date(b.activityDate).getTime());
   const missedActivities = getMissedActivityGap(workoutSummary.user, workoutSummary.workoutPlan, sortedHistoricalActivities);
-
-  const allActivities = [...sortedHistoricalActivities, ...missedActivities];
-
   if (missedActivities && missedActivities.length > 0) {
     createActivityRecords(missedActivities);
   }
 
-  const score = {
-    points: getPoints(allActivities),
-    level: getLevel(allActivities),
-    dayStreak: getDayStreak(allActivities)
-  } as ScoreDto;
+  const activitiesToScoreCalculation = fromUserLastActivity ? missedActivities : [...sortedHistoricalActivities, ...missedActivities];
+
+  const points = calculatePoints(activitiesToScoreCalculation, fromUserLastActivity ? (workoutSummary.score?.points || 0) : 0);
+  const dayStreak = calculateDayStreak(activitiesToScoreCalculation, fromUserLastActivity ? (workoutSummary.score?.dayStreak || 0) : 0);
+  const level = calculateLevel(points);
+
+  const score = { points: points, level: level, dayStreak: dayStreak } as ScoreDto;
 
   updateUserScore(userId, score);
 
@@ -82,42 +97,35 @@ function getMissedActivityGap(user: UserDto, workoutPlan: WorkoutPlanDto, sorted
 }
 
 
-function getDayStreak(activites: ActivityRecordDto[]): number {
+function calculateDayStreak(activites: ActivityRecordDto[], currentStreak: number = 0): number {
   if (activites.length === 0) {
-    return 0;
+    return currentStreak;
   }
 
   // Count backwards from the most recent activity
-  let currentStreak = 0;
+  let streak = 0;
   for (let i = activites.length - 1; i >= 0; i--) {
     const activity = activites[i];
     if (activity.exercise) {
-      currentStreak++;
+      streak++;
     } else {
-      // Streak is broken, stop counting
-      break;
+      return streak; // Streak is broken, stop counting
     }
   }
 
-  return currentStreak;
+  return streak + currentStreak;
 }
 
 export const REWARD_POINTS = 10;
 export const PENALTY_POINTS = 5;
 
-function getPoints(activites: ActivityRecordDto[]): number {
- 
+function calculatePoints(activites: ActivityRecordDto[], initialPoints: number = 0): number {
   const totalPoints = activites.reduce((totalPoints, activity) =>
-    activity.exercise ? totalPoints + REWARD_POINTS : totalPoints - PENALTY_POINTS, 0);
+    activity.exercise ? totalPoints + REWARD_POINTS : totalPoints - PENALTY_POINTS, initialPoints);
   return totalPoints < 0 ? 0 : totalPoints;
 }
 
-function getLevel(activites: ActivityRecordDto[]): number {
-  const points = getPoints(activites);
-  return getLevelFromPoints(points);
-}
-
-export function getLevelFromPoints(points: number) : number {
+export function calculateLevel(points: number): number {
   return Math.floor(points / 100) + 1;
 }
 

@@ -5,7 +5,7 @@ import { workoutRouter } from './controller/workout-controller';
 import cors from 'cors';
 import { userRouter } from './controller/user-contoller';
 import { activityRouter } from './controller/user-activity-controller';
-import { syncUserScores } from './service/score-sync';
+import { recalculateUserScores } from './service/calculate-user-scores-service';
 
 dotenv.config({ path:  process.env.NODE_ENV === 'test' ? '.env.test' : '.env' });
 
@@ -42,7 +42,7 @@ if (process.env.NODE_ENV !== 'test') {
   // Sync scores at startup (non-test environment)
   (async () => {
     try {
-      await syncUserScores();
+      await recalculateUserScores();
       console.log('syncUserScores completed');
     } catch (err: any) {
       console.error('syncUserScores failed:', err?.message || err);

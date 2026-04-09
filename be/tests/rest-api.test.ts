@@ -8,8 +8,8 @@ describe('Fit level full test', () => {
 
     beforeEach((done) => {
         db.serialize(() => {
-            db.run("DELETE FROM activity_record");
-            db.run("DELETE FROM user");
+            db.run("DELETE FROM activity_record", () => done());
+            db.run("DELETE FROM user", () => done());
             db.run("DELETE FROM workout_plan", () => done());
         });
     });
@@ -36,8 +36,9 @@ describe('Fit level full test', () => {
             dayStreak: 0
         });
 
+        //activityDate: new Date(MOCK_TODAY_SUNDAY.getTime() - 7 * 24 * 60 * 60 * 1000)
         // Add an activity record for the user
-        await createAndValidateActivityRecord(workoutSummary);
+        await createAndValidateActivityRecord(workoutSummary, true, new Date());
 
         // Retrieve Workout Summary again to check if score is updated
         const responseWorkoutSummary = await request(app)
@@ -127,12 +128,13 @@ describe('Fit level full test', () => {
     }
 
 
-    async function createAndValidateActivityRecord(workoutSummary: WorkoutSummaryDto) {
+    async function createAndValidateActivityRecord(workoutSummary: WorkoutSummaryDto, exercise: boolean, activityDate: Date) {
         const activityRecord = {
             userId: workoutSummary.user.id,
             activityType: 'running',
             description: 'Morning run',
-            exercise: true,
+            exercise: exercise,
+            //activityDate: activityDate
         } as ActivityRecordDto;
 
 
