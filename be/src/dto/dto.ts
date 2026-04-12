@@ -97,7 +97,7 @@ export const activityRecordSchema = z.object({
     activityType: z.string().optional(),
     description: z.string().optional(),
     exercise: z.boolean().default(false),
-    activityDate: z.date().default(() => new Date())
+    activityDate: z.coerce.date().default(() => new Date())
 });
 
 export type ActivityRecordDto = z.infer<typeof activityRecordSchema>;
