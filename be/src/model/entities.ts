@@ -29,4 +29,3 @@ export interface ActivityRecordEntity {
   exercise: number; // 0 or 1 for SQLite BOOLEAN
   activity_date?: string;
 }
-
